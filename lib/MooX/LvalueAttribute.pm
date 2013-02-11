@@ -1,6 +1,8 @@
 package MooX::LvalueAttribute;
 use strictures 1;
 
+# ABSTRACT: Provides Lvalue accessors to Moo class attributes
+
 use Moo ();
 use Moo::Role ();
 
