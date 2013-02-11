@@ -24,6 +24,11 @@ like $@, qr/lvalue was set but no accessor nor reader/, "can't set an lvalue on 
                 lvalue => 1,
                );
 
+    has three => (
+                is => 'rw',
+                lvalue => 1,
+               );
+
     1;
 }
 
@@ -35,6 +40,10 @@ is $lvalue->two, 43, "normal setter still works";
 $lvalue->two = 42;
 is $lvalue->two, 42, "lvalue set works";
 is $lvalue->_lv_two(), 42, "underlying getter works";
+
+$lvalue->three = 3;
+is $lvalue->three, 3, "lvalue set works for a second attribute";
+is $lvalue->_lv_three(), 3, "underlying getter works for a second attribute";
 
 my $lvalue2 = MooLvalue->new(two => 7);
 is $lvalue2->two, 7, "different instances have different values";

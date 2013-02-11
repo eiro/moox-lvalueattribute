@@ -8,13 +8,6 @@ sub import {
     my $class = shift;
     my $target = caller;
 
-    require Object::ID;
-    eval qq{ package $target;
-             Object::ID->import(); 1;
-           }
-      or die
-        "Error while trying to use Object::ID. error was: $@";
-
     unless ($Moo::MAKERS{$target} && $Moo::MAKERS{$target}{is_class}) {
         die "MooX::LvalueAttribute can only be used on Moo classes.";
     }

@@ -4,7 +4,9 @@ use strictures 1;
 use Moo::Role;
 use Variable::Magic qw(wizard cast);
 
-my %_lvalues;
+use Hash::Util::FieldHash::Compat;
+
+Hash::Util::FieldHash::Compat::fieldhash my %LVALUES;
 
 around generate_method => sub {
     my $orig = shift;
@@ -42,16 +44,15 @@ around generate_method => sub {
         no strict 'refs';
         my $sub = sub : lvalue {
             my $self = shift;
-            my $object_id = $self->object_id;
-            if (! exists $_lvalues{$object_id}) {
+            if (! exists $LVALUES{$self}{$lv_name}) {
                 my $wiz = wizard(
                  set  => sub { $self->$name(${$_[0]}) },
                  get => sub { ${$_[0]} = $self->$name() },
                 );
-                cast $_lvalues{$object_id}, $wiz;
+                cast $LVALUES{$self}{$lv_name}, $wiz;
             }
             @_ and $self->$name(@_);
-            $_lvalues{$object_id};
+            $LVALUES{$self}{$lv_name};
         };
         $methods->{$lv_name} = $sub;
         *{"${into}::${lv_name}"} = $sub;
