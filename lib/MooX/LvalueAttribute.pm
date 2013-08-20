@@ -3,21 +3,48 @@ use strictures 1;
 
 # ABSTRACT: Provides Lvalue accessors to Moo class attributes
 
-use Moo ();
-use Moo::Role ();
+require Moo;
+require Moo::Role;
+
+our %INJECTED_IN;
 
 sub import {
     my $class = shift;
     my $target = caller;
 
-    unless ($Moo::MAKERS{$target} && $Moo::MAKERS{$target}{is_class}) {
-        die "MooX::LvalueAttribute can only be used on Moo classes.";
-    }
+    if ($Moo::Role::INFO{$target} && $Moo::Role::INFO{$target}{is_role}) {
+        # We are loaded from a Moo::Role
 
-    Moo::Role->apply_roles_to_object(
-      Moo->_accessor_maker_for($target),
-      'Method::Generate::Accessor::Role::LvalueAttribute',
-    );
+        my $old_accessor_maker = Moo->can('_accessor_maker_for');
+
+        no strict 'refs';
+        no warnings 'redefine';
+        *{"${target}::__lvalue_attr_mode"} = sub { 1 }; 
+        *Moo::_accessor_maker_for = sub {
+            my ($class, $role_target) = @_;
+            my $maker = $old_accessor_maker->(@_);
+            $role_target->can('__lvalue_attr_mode')
+              && $role_target->__lvalue_attr_mode
+              && ! $INJECTED_IN{$role_target}
+                or return $maker;
+            Moo::Role->apply_roles_to_object( $maker,
+                                              'Method::Generate::Accessor::Role::LvalueAttribute',
+                                            );
+            $INJECTED_IN{$role_target} = 1;
+            return $maker;
+        };
+
+    } elsif ($Moo::MAKERS{$target} && $Moo::MAKERS{$target}{is_class}) {
+
+        # TODO: FIX to avoid applying the role twice.
+
+        Moo::Role->apply_roles_to_object(
+          Moo->_accessor_maker_for($target),
+          'Method::Generate::Accessor::Role::LvalueAttribute',
+        );
+    } else {
+        die "MooX::LvalueAttribute can only be used in Moo classes or Moo roles.";        
+    }
 
 }
 
