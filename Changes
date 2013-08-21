@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+  * can be used from a Moo::Role
+
 0.11      2013-08-21 15:54:27 Europe/Paris
 
 0.10      2013-02-11 23:01:08 Europe/Paris
