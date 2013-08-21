@@ -10,12 +10,17 @@ use Hash::Util::FieldHash::Compat;
 
 Hash::Util::FieldHash::Compat::fieldhash my %LVALUES;
 
+require MooX::LvalueAttribute;
+
 around generate_method => sub {
     my $orig = shift;
     my $self = shift;
     # would like a better way to disable XS
     
     my ($into, $name, $spec, $quote_opts) = @_;
+
+    $MooX::LvalueAttribute::INJECTED_IN{$into}
+      or return $self->$orig(@_);
 
     if ($spec->{lvalue}) {
 

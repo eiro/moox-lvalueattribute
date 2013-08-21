@@ -7,6 +7,7 @@ require Moo;
 require Moo::Role;
 
 our %INJECTED_IN;
+our %OVERRIDEN;
 
 sub import {
     my $class = shift;
@@ -14,34 +15,42 @@ sub import {
 
     if ($Moo::Role::INFO{$target} && $Moo::Role::INFO{$target}{is_role}) {
         # We are loaded from a Moo::Role
-
-        my $old_accessor_maker = Moo->can('_accessor_maker_for');
-
-        no strict 'refs';
-        no warnings 'redefine';
-        *{"${target}::__lvalue_attr_mode"} = sub { 1 }; 
-        *Moo::_accessor_maker_for = sub {
-            my ($class, $role_target) = @_;
-            my $maker = $old_accessor_maker->(@_);
-            $role_target->can('__lvalue_attr_mode')
-              && $role_target->__lvalue_attr_mode
-              && ! $INJECTED_IN{$role_target}
-                or return $maker;
-            Moo::Role->apply_roles_to_object( $maker,
-                                              'Method::Generate::Accessor::Role::LvalueAttribute',
-                                            );
-            $INJECTED_IN{$role_target} = 1;
-            return $maker;
-        };
-
+        if (! $OVERRIDEN{$target} ) {
+            # We don't know yet in which class the role will be consumed, so we
+            # have to work around that, and defer the injection
+    
+            my $old_accessor_maker = Moo->can('_accessor_maker_for');
+    
+            my $new_accessor_maker_for = sub {
+                my ($class, $role_target) = @_;
+                my $maker = $old_accessor_maker->(@_);
+                $role_target->can('__lvalue_attr_mode')
+                  && $role_target->__lvalue_attr_mode
+                  && ! $INJECTED_IN{$role_target}
+                    or return $maker;
+                Moo::Role->apply_roles_to_object(
+                    $maker,
+                    'Method::Generate::Accessor::Role::LvalueAttribute',
+                );
+                $INJECTED_IN{$role_target} = 1;
+                return $maker;
+            };
+    
+            no strict 'refs';
+            no warnings 'redefine';
+            *{"${target}::__lvalue_attr_mode"} = sub { 1 }; 
+            *Moo::_accessor_maker_for = $new_accessor_maker_for;
+            $OVERRIDEN{$target} = 1
+        }
     } elsif ($Moo::MAKERS{$target} && $Moo::MAKERS{$target}{is_class}) {
-
-        # TODO: FIX to avoid applying the role twice.
-
-        Moo::Role->apply_roles_to_object(
-          Moo->_accessor_maker_for($target),
-          'Method::Generate::Accessor::Role::LvalueAttribute',
-        );
+        # We are loaded from a Moo class
+        if ( !$INJECTED_IN{$target} ) {
+            Moo::Role->apply_roles_to_object(
+              Moo->_accessor_maker_for($target),
+              'Method::Generate::Accessor::Role::LvalueAttribute',
+            );
+            $INJECTED_IN{$target} = 1;        
+        }
     } else {
         die "MooX::LvalueAttribute can only be used in Moo classes or Moo roles.";        
     }

@@ -24,6 +24,22 @@ use Test::More;
                  );
 }
 
+{
+    package MooNoLvalue;
+    use Moo;
+
+    has two => (
+                is => 'rw',
+                lvalue => 1,
+               );
+
+    has four => (
+                is => 'rw',
+                lvalue => 1,
+               );
+
+}
+
 
 my $lvalue = MooLvalue->new(one => 5, two => 6);
 is $lvalue->two, 6, "normal getter works";
@@ -40,5 +56,11 @@ is $lvalue->_lv_three(), 3, "underlying getter works for a second attribute";
 
 my $lvalue2 = MooLvalue->new(two => 7);
 is $lvalue2->two, 7, "different instances have different values";
+
+my $lvalue3 = MooNoLvalue->new(two => 7);
+my $plop = $lvalue2->can('two');
+my $plop2 = $lvalue3->can('two');
+eval { $lvalue3->two = 42 };
+like $@, qr/Can't modify non-lvalue subroutine/, "a different Moo class without lvalue";
 
 done_testing;
