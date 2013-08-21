@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.12      2013-08-21 16:43:14 Europe/Paris
+
   * can be used from a Moo::Role
 
 0.11      2013-08-21 15:54:27 Europe/Paris
