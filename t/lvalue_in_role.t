@@ -57,10 +57,10 @@ is $lvalue->_lv_three(), 3, "underlying getter works for a second attribute";
 my $lvalue2 = MooLvalue->new(two => 7);
 is $lvalue2->two, 7, "different instances have different values";
 
-my $lvalue3 = MooNoLvalue->new(two => 7);
-my $plop = $lvalue2->can('two');
-my $plop2 = $lvalue3->can('two');
+my $lvalue3 = MooNoLvalue->new(two => 7, four => 8);
 eval { $lvalue3->two = 42 };
-like $@, qr/Can't modify non-lvalue subroutine/, "a different Moo class without lvalue";
+like $@, qr/Can't modify non-lvalue subroutine/, "a class without lvalue - first attribute";
+eval { $lvalue3->four = 42 };
+like $@, qr/Can't modify non-lvalue subroutine/, "a class without lvalue - second attribute";
 
 done_testing;

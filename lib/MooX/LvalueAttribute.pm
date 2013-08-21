@@ -24,6 +24,8 @@ sub import {
             my $new_accessor_maker_for = sub {
                 my ($class, $role_target) = @_;
                 my $maker = $old_accessor_maker->(@_);
+                defined $maker
+                  or return;
                 $role_target->can('__lvalue_attr_mode')
                   && $role_target->__lvalue_attr_mode
                   && ! $INJECTED_IN{$role_target}
