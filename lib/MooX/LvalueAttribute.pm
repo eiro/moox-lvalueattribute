@@ -67,14 +67,14 @@ sub import {
   use Moo::Role;
   use MooX::LvalueAttribute;
 
-  package App;
-  use Moo;
-  with('MyRole');
-  
   has name => (
     is => 'rw',
     lvalue => 1,
   );
+
+  package App;
+  use Moo;
+  with('MyRole');
 
   # Elsewhere
 
@@ -100,7 +100,7 @@ you can use:
 =head1 ATTRIBUTE SPECIFICATION
 
 To enable Lvalue access to your attribute, simply use C<MooX::LvalueAttribute>
-in the class, and add:
+in the class or role, and add:
 
   lvalue => 1,
 
@@ -109,7 +109,8 @@ in the attribute specification (see synopsis).
 =head1 NOTE ON IMPLEMENTATION
 
 The implementation doesn't use AUTOLOAD, nor TIESCALAR. Instead, it uses a
-custom accessor and C<Variable::Magic>, which is faster than the tie mechanism.
+custom accessor and C<Variable::Magic>, which is faster and cheaper than the
+tie / AUTOLOAD mechanisms.
 
 =cut
 
