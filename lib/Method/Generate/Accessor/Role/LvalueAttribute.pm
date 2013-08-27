@@ -19,7 +19,8 @@ around generate_method => sub {
     
     my ($into, $name, $spec, $quote_opts) = @_;
 
-    $MooX::LvalueAttribute::INJECTED_IN{$into}
+    $MooX::LvalueAttribute::INJECTED_IN_ROLE{$into}
+      || $MooX::LvalueAttribute::INJECTED_IN_CLASS{$into}
       or return $self->$orig(@_);
 
     if ($spec->{lvalue}) {
