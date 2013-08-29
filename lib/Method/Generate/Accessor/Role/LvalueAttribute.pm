@@ -43,7 +43,10 @@ around generate_method => sub {
         }
     }
 
-    my $methods = $self->$orig(@_);
+    my $methods = do {
+        local $Method::Generate::Accessor::CAN_HAZ_XS = 0;
+        $self->$orig(@_);
+    };
 
     foreach ( qw(writer accessor) ) {
         my $lv_name = $spec->{'lv_' . $_}
