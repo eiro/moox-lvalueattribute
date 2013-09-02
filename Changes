@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+  * disable XS optimization per attribute using lvalue, not per entire class
+
 0.14      2013-09-02 15:14:18 Europe/Paris
 
   * Fix tests when Class::XSAccessor is installed

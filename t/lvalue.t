@@ -29,6 +29,10 @@ like $@, qr/lvalue was set but no accessor nor reader/, "can't set an lvalue on 
                 lvalue => 1,
                );
 
+    has four => (
+                is => 'rw',
+               );
+
     1;
 }
 
@@ -44,6 +48,9 @@ is $lvalue->_lv_two(), 42, "underlying getter works";
 $lvalue->three = 3;
 is $lvalue->three, 3, "lvalue set works for a second attribute";
 is $lvalue->_lv_three(), 3, "underlying getter works for a second attribute";
+
+eval { $lvalue->four = 4; };
+like $@, qr/Can't modify non-lvalue subroutine|Modification of a read-only value attempted/, "an attribute without lvalue";
 
 my $lvalue2 = MooLvalue->new(two => 7);
 is $lvalue2->two, 7, "different instances have different values";
