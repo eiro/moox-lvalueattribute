@@ -1,7 +1,10 @@
 use strictures 1;
 use Test::More;
 
-use Devel::Hide qw(Class::XSAccessor);
+use Method::Generate::Accessor;
+
+$Method::Generate::Accessor::CAN_HAZ_XS
+  or plan( skip_all => 'Need Class::XSAccessor to run these tests' );
 
 {
     package MyRole;
@@ -64,16 +67,16 @@ $lvalue->three = 3;
 is $lvalue->three, 3, "lvalue set works for a second attribute";
 is $lvalue->_lv_three(), 3, "underlying getter works for a second attribute";
 
-eval { $lvalue->four = 42 };
-like $@, qr/Can't modify non-lvalue subroutine/, "this attr has no lvalue";
+eval { $lvalue->_lv_four() };
+like $@, qr/Can't locate object method "_lv_four"/, "this attr has no lvalue";
 
 my $lvalue2 = MooLvalue->new(two => 7);
 is $lvalue2->two, 7, "different instances have different values";
 
 my $lvalue3 = MooNoLvalue->new(two => 7, four => 8);
-eval { $lvalue3->two = 42 };
-like $@, qr/Can't modify non-lvalue subroutine/, "a class without lvalue - first attribute";
-eval { $lvalue3->four = 42 };
-like $@, qr/Can't modify non-lvalue subroutine/, "a class without lvalue - second attribute";
+eval { $lvalue3->_lv_two() };
+like $@, qr/Can't locate object method "_lv_two"/, "a class without lvalue - first attribute";
+eval { $lvalue3->_lv_four() };
+like $@, qr/Can't locate object method "_lv_four"/, "a class without lvalue - second attribute";
 
 done_testing;
