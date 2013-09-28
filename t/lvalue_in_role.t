@@ -58,11 +58,9 @@ is $lvalue->two, 43, "normal setter still works";
 
 $lvalue->two = 42;
 is $lvalue->two, 42, "lvalue set works, defined in a role";
-is $lvalue->_lv_two(), 42, "underlying getter works";
 
 $lvalue->three = 3;
 is $lvalue->three, 3, "lvalue set works for a second attribute";
-is $lvalue->_lv_three(), 3, "underlying getter works for a second attribute";
 
 eval { $lvalue->four = 42 };
 like $@, qr/Can't modify non-lvalue subroutine/, "this attr has no lvalue";
@@ -75,5 +73,11 @@ eval { $lvalue3->two = 42 };
 like $@, qr/Can't modify non-lvalue subroutine/, "a class without lvalue - first attribute";
 eval { $lvalue3->four = 42 };
 like $@, qr/Can't modify non-lvalue subroutine/, "a class without lvalue - second attribute";
+
+my $val = MooLvalue->new( one => 'explicit value', four => 'welp' );
+eval { sprintf('%s', $val->one) };
+is $@, '', 'lvalue attr from role works in sprintf';
+eval { sprintf('%s', $val->four) };
+is $@, '', 'lvalue attr from class works in sprintf';
 
 done_testing;
