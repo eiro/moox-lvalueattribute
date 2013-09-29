@@ -61,22 +61,11 @@ is $lvalue->two, 43, "normal setter still works";
 
 $lvalue->two = 42;
 is $lvalue->two, 42, "lvalue set works, defined in a role";
-is $lvalue->_lv_two(), 42, "underlying getter works";
 
 $lvalue->three = 3;
 is $lvalue->three, 3, "lvalue set works for a second attribute";
-is $lvalue->_lv_three(), 3, "underlying getter works for a second attribute";
-
-eval { $lvalue->_lv_four() };
-like $@, qr/Can't locate object method "_lv_four"/, "this attr has no lvalue";
 
 my $lvalue2 = MooLvalue->new(two => 7);
 is $lvalue2->two, 7, "different instances have different values";
-
-my $lvalue3 = MooNoLvalue->new(two => 7, four => 8);
-eval { $lvalue3->_lv_two() };
-like $@, qr/Can't locate object method "_lv_two"/, "a class without lvalue - first attribute";
-eval { $lvalue3->_lv_four() };
-like $@, qr/Can't locate object method "_lv_four"/, "a class without lvalue - second attribute";
 
 done_testing;

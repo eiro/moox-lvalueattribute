@@ -1,45 +1,46 @@
 package MooX::LvalueAttribute;
 use strictures 1;
+use Variable::Magic qw(wizard cast getdata);
 
 # ABSTRACT: Provides Lvalue accessors to Moo class attributes
 
-require Moo;
-require Moo::Role;
-
-our %INJECTED_IN_ROLE;
-our %INJECTED_IN_CLASS;
+use Class::Method::Modifiers qw(install_modifier);
 
 sub import {
     my $class = shift;
     my $target = caller;
 
-    if ($Moo::Role::INFO{$target} && $Moo::Role::INFO{$target}{is_role}) {
+    die "MooX::LvalueAttribute can only be used in Moo classes or Moo roles."
+      if !$target->can('has');
 
-        # We are loaded from a Moo role
-        $Moo::Role::INFO{$target}{accessor_maker} ||= do {
-            require Method::Generate::Accessor;
-            Method::Generate::Accessor->new
-          };
-        Moo::Role->apply_roles_to_object(
-            $Moo::Role::INFO{$target}{accessor_maker},
-            'Method::Generate::Accessor::Role::LvalueAttribute',
+    install_modifier($target, 'after', 'has', sub {
+      my @attrs = ref $_[0] ? @{ +shift } : shift;
+      my %spec = @_;
+      return unless $spec{lvalue};
+      for my $attr (@attrs) {
+        my $is = $spec{is};
+        my $reader = $spec{reader} || $spec{accessor} ||
+          $is ne 'bare' ? $attr
+          : die "lvalue was set but no accessor nor reader";
+        my $writer = $spec{writer} || $spec{accessor} ||
+            $spec{is} eq 'rw'   ? $attr
+          : $spec{is} eq 'rwp'  ? "_set_$attr"
+          : die "lvalue was set but no accessor nor writer";
+
+        my $wiz;
+        $wiz = wizard(
+          data => sub { $_[1] },
+          set  => sub { getdata(${$_[0]}, $wiz)->$writer(${$_[0]}) },
         );
-        $INJECTED_IN_ROLE{$target} = 1;
-
-    } elsif ($Moo::MAKERS{$target} && $Moo::MAKERS{$target}{is_class}) {
-
-        # We are loaded from a Moo class
-        if ( !$INJECTED_IN_CLASS{$target} ) {
-            Moo::Role->apply_roles_to_object(
-              Moo->_accessor_maker_for($target),
-              'Method::Generate::Accessor::Role::LvalueAttribute',
-            );
-            $INJECTED_IN_CLASS{$target} = 1;        
-        }
-    } else {
-        die "MooX::LvalueAttribute can only be used in Moo classes or Moo roles.";        
-    }
-
+        install_modifier($target, 'around', $reader, sub :lvalue {
+          my $orig = shift;
+          my $self = shift;
+          my $val = $self->$orig(@_);
+          cast $val, $wiz, $self;
+          $val;
+        });
+      }
+    });
 }
 
 =head1 SYNOPSIS
