@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+0.16      2013-10-09 12:16:47 Europe/Paris
+
+  * fix issues when attribute value is not an integer (issue #3) (moznion)
+
 0.15      2013-09-02 17:08:34 Europe/Paris
 
   * disable XS optimization per attribute using lvalue, not per entire class
