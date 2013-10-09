@@ -55,4 +55,9 @@ like $@, qr/Can't modify non-lvalue subroutine|Modification of a read-only value
 my $lvalue2 = MooLvalue->new(two => 7);
 is $lvalue2->two, 7, "different instances have different values";
 
+my $lvalue3 = MooLvalue->new(two => 'foo');
+is $lvalue3->two, 'foo', "not numerical values getter works";
+$lvalue3->two = 'bar';
+is $lvalue3->two, 'bar', "not numerical values setter works";
+
 done_testing;
