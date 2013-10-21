@@ -12,7 +12,7 @@ eval {
                );
 };
 
-like $@, qr/lvalue was set but no accessor nor reader/, "can't set an lvalue on a ro attribute";
+like $@, qr/lvalue was set but no accessor nor writer/, "can't set an lvalue on a ro attribute";
 
 {
     package MooLvalue;
@@ -50,11 +50,9 @@ is $lvalue->two, 43, "normal setter still works";
 
 $lvalue->two = 42;
 is $lvalue->two, 42, "lvalue set works";
-is $lvalue->_lv_two(), 42, "underlying getter works";
 
 $lvalue->three = 3;
 is $lvalue->three, 3, "lvalue set works for a second attribute";
-is $lvalue->_lv_three(), 3, "underlying getter works for a second attribute";
 
 eval { $lvalue->four = 4; };
 like $@, qr/Can't modify non-lvalue subroutine|Modification of a read-only value attempted/, "an attribute without lvalue";
