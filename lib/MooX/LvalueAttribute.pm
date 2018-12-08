@@ -6,40 +6,30 @@ use strictures 1;
 require Moo;
 require Moo::Role;
 
-our %INJECTED_IN_ROLE;
-our %INJECTED_IN_CLASS;
-
 sub import {
     my $class = shift;
     my $target = caller;
 
+    my $maker;
     if ($Moo::Role::INFO{$target} && $Moo::Role::INFO{$target}{is_role}) {
-
-        # We are loaded from a Moo role
-        $Moo::Role::INFO{$target}{accessor_maker} ||= do {
+        $maker = $Moo::Role::INFO{$target}{accessor_maker} ||= do {
             require Method::Generate::Accessor;
             Method::Generate::Accessor->new
-          };
-        Moo::Role->apply_roles_to_object(
-            $Moo::Role::INFO{$target}{accessor_maker},
-            'Method::Generate::Accessor::Role::LvalueAttribute',
-        );
-        $INJECTED_IN_ROLE{$target} = 1;
-
-    } elsif ($Moo::MAKERS{$target} && $Moo::MAKERS{$target}{is_class}) {
-
-        # We are loaded from a Moo class
-        if ( !$INJECTED_IN_CLASS{$target} ) {
-            Moo::Role->apply_roles_to_object(
-              Moo->_accessor_maker_for($target),
-              'Method::Generate::Accessor::Role::LvalueAttribute',
-            );
-            $INJECTED_IN_CLASS{$target} = 1;        
-        }
-    } else {
-        die "MooX::LvalueAttribute can only be used in Moo classes or Moo roles.";        
+        };
+    }
+    elsif ($Moo::MAKERS{$target} && $Moo::MAKERS{$target}{is_class}) {
+        $maker = Moo->_accessor_maker_for($target);
+    }
+    else {
+        die "MooX::LvalueAttribute can only be used in Moo classes or Moo roles.";
     }
 
+    if (!$maker->does('Method::Generate::Accessor::Role::LvalueAttribute')) {
+        Moo::Role->apply_roles_to_object(
+            $maker,
+            'Method::Generate::Accessor::Role::LvalueAttribute',
+        );
+    }
 }
 
 =head1 SYNOPSIS
