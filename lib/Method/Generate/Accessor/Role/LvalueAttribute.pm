@@ -1,4 +1,5 @@
 package Method::Generate::Accessor::Role::LvalueAttribute;
+
 use strictures 1;
 
 # ABSTRACT: Provides Lvalue accessors to Moo class attributes
