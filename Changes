@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+  * use method modifiers instead of separate methods (Graham Knop)
+  * fix memory leak (issue #5) (Nicolas R.)
+
 0.16      2013-10-09 12:16:47 Europe/Paris
 
   * fix issues when attribute value is not an integer (issue #3) (moznion)
