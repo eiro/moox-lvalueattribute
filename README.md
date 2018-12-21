@@ -27,7 +27,7 @@ Learn about `:lvalue` from the
 Learn about `MooX::LvalueAttribute` from the
 [MooX::LvalueAttribute CPAN page](https://metacpan.org/pod/MooX::LvalueAttribute)
 
-Learn about `MooX::LvalueAttribute` from the
+Learn about `MooX` from the
 [Moo CPAN page](https://metacpan.org/pod/Moo)
 
 don't miss our [CONTRIBUTING.md](CONTRIBUTING) file to be a part of the awesomeness.
