@@ -103,6 +103,17 @@ The implementation doesn't use AUTOLOAD, nor TIESCALAR. Instead, it uses a
 custom accessor and C<Variable::Magic>, which is faster and cheaper than the
 tie / AUTOLOAD mechanisms.
 
+=head1 CONTIBUTORS
+
+This module was writen and originaly maintained by Damien "dams" Krotkine.
+Contributors are
+
+    Damien "dams" Krotkine.
+    moznion
+    Graham Knop
+    Marc Chantreux
+    Nicolas R
+
 =cut
 
 1;
